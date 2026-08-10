@@ -1,93 +1,144 @@
-'''
-#Importa a classe de produtos
-from models.produtos import Produto
-
-tomate = Produto(1, "tomate", 150.00, 10)
-
-print("Produto 1")
-print("Id: ", tomate.id)
-print("Nome: ", tomate.nome)
-print("Preço: R$", tomate.preco)
-print("Estoque: ", tomate.estoque)
-
-print("--- Estado Inicial ---")
-tomate.exibir_detalhes()
-
-print("\n--- Testando Recebimento de Estoque ---")
-tomate.adicionar_estoque(5)
-tomate.exibir_detalhes() # Esperado: 15 unidades
-
-print("\n--- Testando Venda Com Sucesso ---")
-tomate.remover_estoque(3)
-tomate.exibir_detalhes() # Esperado: 12 unidades
-
-print("\n--- Testando Venda Sem Estoque Suficiente ---")
-tomate.remover_estoque(20) # Deve disparar o aviso de estoque insuficiente!
-tomate.exibir_detalhes() # Deve continuar com 12 unidad
-
-from models.produtos import Produto
-from models.categoria import Categoria
-
-# 1. Criando categorias
-cat_hortifruti = Categoria(1, "Hortifrúti", "Produtos frescos da horta")
-cat_eletronicos = Categoria(2, "Eletrônicos", "Dispositivos e acessórios")
-
-# 2. Criando produtos
-tomate = Produto(101, "Tomate Orgânico", 8.50, 50)
-maca = Produto(102, "Maçã Fuji", 6.00, 30)
-teclado = Produto(201, "Teclado Mecânico", 150.00, 10)
-
-# 3. Associando produtos às suas categorias
-cat_hortifruti.adicionar_produto(tomate)
-cat_hortifruti.adicionar_produto(maca)
-cat_eletronicos.adicionar_produto(teclado)
-
-# 4. Listando produtos por categoria
-cat_hortifruti.listar_produtos()
-cat_eletronicos.listar_produtos()
-
-from models.cliente import Cliente
-
-cliente1 = Cliente(1, "João", "15151515151", "joão@gmail.com")
-
-print("Dados do Cliente")
-cliente1.exibir_DETALHES()
-
-print("atualização de cadastro")
-cliente1.atualizar_email("jpgmailcom")
-cliente1.atualizar_email("jp@gmail.com")
-
-cliente1.exibir_DETALHES()
-'''
 from models.produtos import Produto
 from models.categoria import Categoria
 from models.cliente import Cliente
 from models.pedido import Pedido
+from database import salvar_dados, carregar_dados
 
-# 1. Criando Entidades Base
-cat_eletronicos = Categoria(1, "Eletrônicos")
+# Carrega os dados do arquivo ao iniciar o programa
+produtos, clientes, categorias = carregar_dados()
+# Armazenamento em memória (Simulação de Banco de Dados)
+categorias = []
+produtos = []
+clientes = []
+pedidos = []
 
-teclado = Produto(101, "Teclado Mecânico", 150.00, 10)
-mouse = Produto(102, "Mouse Gamer", 80.00, 5)
-cat_eletronicos.adicionar_produto(teclado)
-cat_eletronicos.adicionar_produto(mouse)
+# Geradores simples de ID
+proximo_id_cat = 1
+proximo_id_prod = 101
+proximo_id_cli = 1
+proximo_id_ped = 1001
 
-cliente1 = Cliente(1, "Carlos Eduardo", "111.222.333-44", "carlos@gmail.com")
 
-# 2. Criando o Pedido
-pedido1 = Pedido(id=1001, cliente=cliente1)
+def exibir_menu():
+    print("\n==========================================")
+    print("      🛒 SISTEMA DE E-COMMERCE PY        ")
+    print("==========================================")
+    print("1. Cadastrar Categoria")
+    print("2. Cadastrar Produto")
+    print("3. Cadastrar Cliente")
+    print("4. Criar e Finalizar Pedido")
+    print("5. Listar Tudo (Categorias, Produtos, Clientes)")
+    print("0. Sair")
+    print("==========================================")
 
-# 3. Adicionando Produtos ao Carrinho
-pedido1.adicionar_produto(teclado, quantidade=2)
-pedido1.adicionar_produto(mouse, quantidade=1)
 
-# 4. Exibindo Resumo Antes de Finalizar
-pedido1.exibir_resumo()
+while True:
+    exibir_menu()
+    opcao = input("Escolha uma opção: ").strip()
 
-# 5. Finalizando a Compra (deve atualizar o estoque dos produtos)
-pedido1.finalizar_pedido()
+    if opcao == "1":
+        print("\n--- CADASTRO DE CATEGORIA ---")
+        nome = input("Nome da categoria: ").strip()
+        descricao = input("Descrição (opcional): ").strip()
+        
+        nova_cat = Categoria(proximo_id_cat, nome, descricao)
+        categorias.append(nova_cat)
+        proximo_id_cat += 1
+        print(f"✅ Categoria '{nome}' cadastrada com sucesso!")
 
-# 6. Verificando se o Estoque Realmente Baixou
-print("--- Estoque Atualizado dos Produtos ---")
-teclado.exibir_detalhes() # Esperado: 8 unidades em estoque
-mouse.exibir_detalhes()   # Esperado: 4 unidades em estoque
+    elif opcao == "2":
+        print("\n--- CADASTRO DE PRODUTO ---")
+        if not categorias:
+            print("⚠️ Cadastre ao menos uma Categoria antes de cadastrar produtos!")
+            continue
+
+        nome = input("Nome do produto: ").strip()
+        preco = float(input("Preço (R$): "))
+        estoque = int(input("Quantidade em estoque: "))
+
+        print("\nCategorias disponíveis:")
+        for idx, cat in enumerate(categorias):
+            print(f"[{idx}] {cat.nome}")
+        
+        idx_cat = int(input("Selecione o número da categoria: "))
+        categoria_selecionada = categorias[idx_cat]
+
+        novo_prod = Produto(proximo_id_prod, nome, preco, estoque)
+        produtos.append(novo_prod)
+        categoria_selecionada.adicionar_produto(novo_prod)
+        proximo_id_prod += 1
+        salvar_dados(produtos, clientes, categorias)
+        print(f"✅ Produto '{nome}' cadastrado com sucesso!")
+
+    elif opcao == "3":
+        print("\n--- CADASTRO DE CLIENTE ---")
+        nome = input("Nome do cliente: ").strip()
+        cpf = input("CPF: ").strip()
+        email = input("E-mail: ").strip()
+
+        novo_cli = Cliente(proximo_id_cli, nome, cpf, email)
+        clientes.append(novo_cli)
+        proximo_id_cli += 1
+        salvar_dados(produtos, clientes, categorias)
+        print(f"✅ Cliente '{nome}' cadastrado com sucesso!")
+
+    elif opcao == "4":
+        print("\n--- CRIAR PEDIDO ---")
+        if not clientes:
+            print("⚠️ Cadastre ao menos um Cliente primeiro!")
+            continue
+        if not produtos:
+            print("⚠️ Cadastre ao menos um Produto primeiro!")
+            continue
+
+        print("\nClientes disponíveis:")
+        for idx, cli in enumerate(clientes):
+            print(f"[{idx}] {cli.nome} (CPF: {cli.cpf})")
+        
+        idx_cli = int(input("Selecione o número do cliente: "))
+        cliente_sel = clientes[idx_cli]
+
+        novo_pedido = Pedido(proximo_id_ped, cliente_sel)
+
+        # Adicionando produtos ao carrinho
+        while True:
+            print("\nProdutos disponíveis:")
+            for idx, prod in enumerate(produtos):
+                print(f"[{idx}] {prod.nome} - R${prod.preco:.2f} (Estoque: {prod.estoque})")
+            
+            idx_prod = int(input("Selecione o número do produto (ou -1 para finalizar carrinho): "))
+            if idx_prod == -1:
+                break
+            
+            qtd = int(input("Quantidade desejada: "))
+            novo_pedido.adicionar_produto(produtos[idx_prod], qtd)
+
+        # Resumo e Finalização
+        novo_pedido.exibir_resumo()
+        confirmar = input("Deseja finalizar o pedido agora? (s/n): ").strip().lower()
+        if confirmar == 's':
+            novo_pedido.finalizar_pedido()
+            pedidos.append(novo_pedido)
+            proximo_id_ped += 1
+            salvar_dados(produtos, clientes, categorias)
+
+    elif opcao == "5":
+        print("\n================ RELATÓRIO GERAL ================")
+        print("\n--- CLIENTES ---")
+        if not clientes:
+            print("Nenhum cliente cadastrado.")
+        for c in clientes:
+            c.exibir_detalhes()
+
+        print("\n--- CATEGORIAS E PRODUTOS ---")
+        if not categorias:
+            print("Nenhuma categoria cadastrada.")
+        for cat in categorias:
+            cat.listar_produtos()
+
+    elif opcao == "0":
+        print("\nSaindo do sistema... Até logo! 👋")
+        break
+
+    else:
+        print("❌ Opção inválida! Tente novamente.")

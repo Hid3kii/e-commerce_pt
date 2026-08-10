@@ -40,3 +40,17 @@ class Categoria:
 
         for prod in self.produtos:
             prod.exibir_detalhes()
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nome": self.nome,
+            "descricao": self.descricao
+        }
+
+    @classmethod
+    def from_dict(cls, dados):
+        return cls(
+            id=dados["id"],
+            nome=dados["nome"],
+            descricao=dados["descricao"]
+        )

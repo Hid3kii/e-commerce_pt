@@ -23,3 +23,21 @@ class Produto:
             print(f"Removidas {quantidade} unidades do estoque de {self.nome}.")
         else:
             print(f"Venda não permitida! Estoque insuficiente para {self.nome}. Disponível: {self.estoque}")
+
+
+    def to_dict(self):
+        return{
+            "id": self.id,
+            "nome": self.nome,
+            "preco": self.preco,
+            "estoque": self.estoque,
+        }          
+
+    @classmethod
+    def from_dict(cls, dados):
+        return cls(
+            id=dados["id"],
+            nome=dados["nome"],
+            preco=dados["preco"],
+            estoque=dados["estoque"]
+        )

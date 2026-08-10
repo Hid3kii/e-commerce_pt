@@ -5,7 +5,7 @@ class Cliente:
           self.cpf = cpf
           self.email = email
 
-     def exibir_DETALHES(self):
+     def exibir_detalhes(self):
           print(f"ID: {self.id} | Nome : {self.nome} | CPF : {self.cpf} | EMAIL : {self.email}")
 
      def atualizar_email(self, novo_email):
@@ -14,3 +14,20 @@ class Cliente:
                print(f"E-mail do cliente {self.nome} atualizado para {self.email}")
           else:
                print("Email inválido !  o email precisa conter '@' e '.'.")
+
+     def to_dict(self):
+          return{
+               "id": self.id,
+               "nome": self.nome,
+               "cpf": self.cpf,
+               "email": self.email,
+          }
+
+     @classmethod
+     def from_dict(cls, dados):
+        return cls(
+            id=dados["id"],
+            nome=dados["nome"],
+            cpf=dados["cpf"],
+            email=dados["email"]
+        )
