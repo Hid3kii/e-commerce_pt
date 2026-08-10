@@ -4,6 +4,25 @@ from models.cliente import Cliente
 from models.pedido import Pedido
 from database import salvar_dados, carregar_dados
 
+def ler_int(mensagem):
+    while True:
+        try:
+            return int(input(mensagem))
+        except ValueError:
+            print(" Entrada inválida! Digite um número inteiro válido.")
+
+def ler_float(mensagem):
+    while True:
+        try:
+            entrada = input(mensagem).strip().replace(",", ".")
+            valor = float(entrada)
+            if valor < 0:
+                print(" O valor não pode ser negativo!")
+                continue
+            return valor
+        except ValueError:
+            print(" Entrada inválida! Digite um valor numérico válido (ex: 29.90).")
+
 # Carrega os dados do arquivo ao iniciar o programa
 produtos, clientes, categorias = carregar_dados()
 # Armazenamento em memória (Simulação de Banco de Dados)
@@ -21,7 +40,7 @@ proximo_id_ped = 1001
 
 def exibir_menu():
     print("\n==========================================")
-    print("      🛒 SISTEMA DE E-COMMERCE PY        ")
+    print("        SISTEMA DE E-COMMERCE PY        ")
     print("==========================================")
     print("1. Cadastrar Categoria")
     print("2. Cadastrar Produto")
@@ -44,17 +63,17 @@ while True:
         nova_cat = Categoria(proximo_id_cat, nome, descricao)
         categorias.append(nova_cat)
         proximo_id_cat += 1
-        print(f"✅ Categoria '{nome}' cadastrada com sucesso!")
+        print(f" Categoria '{nome}' cadastrada com sucesso!")
 
     elif opcao == "2":
         print("\n--- CADASTRO DE PRODUTO ---")
         if not categorias:
-            print("⚠️ Cadastre ao menos uma Categoria antes de cadastrar produtos!")
+            print("Cadastre ao menos uma Categoria antes de cadastrar produtos!")
             continue
 
         nome = input("Nome do produto: ").strip()
-        preco = float(input("Preço (R$): "))
-        estoque = int(input("Quantidade em estoque: "))
+        preco = ler_float(input("Preço (R$): "))
+        estoque = ler_int(input("Quantidade em estoque: "))
 
         print("\nCategorias disponíveis:")
         for idx, cat in enumerate(categorias):
@@ -68,7 +87,7 @@ while True:
         categoria_selecionada.adicionar_produto(novo_prod)
         proximo_id_prod += 1
         salvar_dados(produtos, clientes, categorias)
-        print(f"✅ Produto '{nome}' cadastrado com sucesso!")
+        print(f" Produto '{nome}' cadastrado com sucesso!")
 
     elif opcao == "3":
         print("\n--- CADASTRO DE CLIENTE ---")
@@ -80,15 +99,15 @@ while True:
         clientes.append(novo_cli)
         proximo_id_cli += 1
         salvar_dados(produtos, clientes, categorias)
-        print(f"✅ Cliente '{nome}' cadastrado com sucesso!")
+        print(f" Cliente '{nome}' cadastrado com sucesso!")
 
     elif opcao == "4":
         print("\n--- CRIAR PEDIDO ---")
         if not clientes:
-            print("⚠️ Cadastre ao menos um Cliente primeiro!")
+            print(" Cadastre ao menos um Cliente primeiro!")
             continue
         if not produtos:
-            print("⚠️ Cadastre ao menos um Produto primeiro!")
+            print(" Cadastre ao menos um Produto primeiro!")
             continue
 
         print("\nClientes disponíveis:")
@@ -141,4 +160,4 @@ while True:
         break
 
     else:
-        print("❌ Opção inválida! Tente novamente.")
+        print(" Opção inválida! Tente novamente.")
